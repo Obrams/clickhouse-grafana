@@ -11,10 +11,7 @@ docker-compose up -d
 ## Шаг 2: Генерация данных
 
 ```bash
-# Активируйте виртуальное окружение
 source venv/bin/activate
-
-# Сгенерируйте тестовые данные (10 тысяч записей для быстрого старта)
 python python_generate_script.py --password changeme --records 10000 --time-range 24
 ```
 
@@ -47,17 +44,13 @@ python python_generate_script.py --password changeme --records 10000 --time-rang
 Для более реалистичного тестирования:
 
 ```bash
-# 1 миллион записей за последние 7 дней
 python python_generate_script.py --password changeme --records 1000000 --time-range 168
 ```
 
 ## Остановка системы
 
 ```bash
-# Остановить контейнеры
 docker-compose down
-
-# Остановить и удалить все данные
 docker-compose down -v
 ```
 
@@ -69,15 +62,7 @@ docker-compose down -v
 
 ### Ошибка подключения к ClickHouse?
 ```bash
-# Проверьте статус контейнеров
 docker ps
-
-# Посмотрите логи
 docker-compose logs clickhouse
 docker-compose logs grafana
 ```
-
----
-
-📖 **Полная документация**: См. [USAGE.md](USAGE.md) для детальных инструкций
-

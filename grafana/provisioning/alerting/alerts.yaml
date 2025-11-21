@@ -1,14 +1,11 @@
-# Автоматическая настройка алертов для Grafana
 apiVersion: 1
 
-# Группы алертов
 groups:
   - orgId: 1
     name: ClickHouse Alerts
     folder: ClickHouse Analytics
     interval: 1m
     rules:
-      # Алерт на высокую латентность
       - uid: high_latency_alert
         title: High Latency Alert
         condition: C
@@ -22,7 +19,6 @@ groups:
               format: 1
               queryType: sql
               rawSql: |
-                -- Средняя латентность за последние 5 минут
                 SELECT 
                     now() AS time,
                     avg(latency) AS avg_latency
@@ -91,7 +87,6 @@ groups:
           team: backend
         isPaused: false
 
-      # Алерт на высокий процент ошибок
       - uid: high_error_rate_alert
         title: High Error Rate Alert
         condition: C
@@ -105,7 +100,6 @@ groups:
               format: 1
               queryType: sql
               rawSql: |
-                -- Процент ошибок за последние 5 минут
                 SELECT 
                     now() AS time,
                     (countIf(error_type != '') / count()) * 100 AS error_rate_percent
@@ -174,7 +168,6 @@ groups:
           team: backend
         isPaused: false
 
-# Каналы уведомлений (используем встроенный Grafana UI)
 contactPoints:
   - orgId: 1
     name: grafana-default-email
@@ -185,7 +178,6 @@ contactPoints:
           addresses: admin@localhost
         disableResolveMessage: false
 
-# Политики уведомлений
 policies:
   - orgId: 1
     receiver: grafana-default-email
@@ -195,4 +187,3 @@ policies:
     group_wait: 10s
     group_interval: 5m
     repeat_interval: 12h
-

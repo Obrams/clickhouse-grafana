@@ -24,7 +24,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Основные метрики latency: средний, 95-й перцентиль и максимальный. 95-й перцентиль показывает латентность для 95% запросов.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -182,7 +182,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Текущие значения основных метрик latency. Красный цвет при превышении порога в 2000 мс.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -257,7 +257,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Топ-20 пользователей с наибольшей средней латентностью. Фильтр requests_count > 10 исключает единичные запросы.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -383,7 +383,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Распределение запросов по диапазонам латентности. Помогает понять, сколько запросов попадает в каждый диапазон производительности.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {

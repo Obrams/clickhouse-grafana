@@ -2,38 +2,27 @@
 
 Полнофункциональная система для генерации тестовых данных, хранения в ClickHouse и визуализации в Grafana с настроенными дашбордами и алертами.
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ### 1. Запуск инфраструктуры
 
 ```bash
-# Запуск ClickHouse и Grafana
 docker-compose up -d
-
-# Проверка статуса
 docker ps
 ```
 
 ### 2. Создание виртуального окружения и установка зависимостей
 
 ```bash
-# Создание виртуального окружения (если еще не создано)
 python3 -m venv venv
-
-# Активация
 source venv/bin/activate
-
-# Установка зависимостей
 pip install -r requirements.txt
 ```
 
 ### 3. Генерация тестовых данных
 
 ```bash
-# Базовая генерация (1 млн записей за последний час)
 python python_generate_script.py --password changeme
-
-# Или быстрая генерация для тестирования (10 тыс. записей)
 python python_generate_script.py --password changeme --records 10000
 ```
 
@@ -44,104 +33,80 @@ python python_generate_script.py --password changeme --records 10000
 - **Логин**: admin
 - **Пароль**: admin123
 
-## 📊 Что включено
+## Что включено
 
-### Дашборды (автоматически создаются)
+### Дашборды
 
 1. **Частота событий** - анализ активности по дням/часам/типам
 2. **Ошибки по типам** - мониторинг ошибок и проблемных пользователей
 3. **Latency мониторинг** - производительность системы (avg, p95, p99)
 4. **Аномалии ошибок** - детектирование всплесков и паттернов ошибок
 
-### Алерты (автоматически настроены)
+### Алерты
 
 - **High Latency Alert** - срабатывает при latency > 2000 мс
 - **High Error Rate Alert** - срабатывает при error_rate > 5%
 
-## 📁 Структура проекта
+## Структура проекта
 
 ```
 clickhouse-grafana/
-├── docker-compose.yaml              # Конфигурация ClickHouse и Grafana
-├── python_generate_script.py       # Генератор тестовых данных
-├── requirements.txt                 # Python зависимости
-├── USAGE.md                         # Подробная документация
-├── README.md                        # Этот файл
+├── docker-compose.yaml
+├── python_generate_script.py
+├── requirements.txt
+├── README.md
 └── grafana/
     ├── provisioning/
     │   ├── datasources/
-    │   │   └── clickhouse.yaml      # Автоподключение к ClickHouse
+    │   │   └── clickhouse.yaml
     │   ├── dashboards/
-    │   │   └── default.yaml         # Настройка автозагрузки дашбордов
+    │   │   └── default.yaml
     │   └── alerting/
-    │       └── alerts.yaml          # Конфигурация алертов
+    │       └── alerts.yaml
     └── dashboards/
-        ├── events_frequency.json    # Дашборд частоты событий
-        ├── errors_by_type.json      # Дашборд ошибок
-        ├── latency_monitoring.json  # Дашборд latency
-        └── error_anomalies.json     # Дашборд аномалий
+        ├── events_frequency.json
+        ├── errors_by_type.json
+        ├── latency_monitoring.json
+        └── error_anomalies.json
 ```
 
-## 🛠 Полезные команды
+## Полезные команды
 
 ### Генерация данных
 
 ```bash
-# Пересоздать таблицу и загрузить данные
 python python_generate_script.py --password changeme --recreate --records 100000
-
-# Данные за последние 24 часа
 python python_generate_script.py --password changeme --time-range 24 --records 1000000
-
-# Только добавить данные (не пересоздавать таблицу)
 python python_generate_script.py --password changeme --skip-create --records 50000
 ```
 
 ### Docker
 
 ```bash
-# Остановка всех контейнеров
 docker-compose down
-
-# Остановка с удалением данных
 docker-compose down -v
-
-# Просмотр логов
 docker-compose logs -f grafana
 docker-compose logs -f clickhouse
-
-# Перезапуск контейнера
 docker-compose restart grafana
 ```
 
 ### ClickHouse CLI
 
 ```bash
-# Подключение к ClickHouse
 docker exec -it clickhouse clickhouse-client --password changeme
 
-# Примеры запросов
 SELECT count() FROM web_events;
 SELECT event, count() FROM web_events GROUP BY event;
 SELECT avg(latency) FROM web_events;
 ```
 
-## 📖 Дополнительная информация
-
-Подробная документация находится в файле [USAGE.md](USAGE.md):
-- Примеры использования генератора данных
-- Структура данных
-- Подробное описание дашбордов
-- Кастомизация SQL-запросов
-- Устранение проблем
-
-## 🔧 Требования
+## Требования
 
 - Docker и Docker Compose
 - Python 3.8+
 - 2GB+ свободной RAM для Docker
 
-## 📝 Структура данных
+## Структура данных
 
 Таблица `web_events` содержит:
 - `event_time` (DateTime) - время события
@@ -150,7 +115,7 @@ SELECT avg(latency) FROM web_events;
 - `latency` (UInt32) - задержка в мс (10-1000)
 - `error_type` (String) - тип ошибки: timeout, server_error, validation_error или пусто
 
-## 🎯 Примеры использования
+## Примеры использования
 
 ### Мониторинг производительности
 1. Откройте дашборд "Latency мониторинг"
@@ -167,7 +132,7 @@ SELECT avg(latency) FROM web_events;
 2. Проверьте тепловую карту для выявления паттернов
 3. Сравните текущие значения с предыдущими периодами
 
-## 🐛 Устранение проблем
+## Устранение проблем
 
 ### Grafana не показывает данные
 1. Проверьте, что ClickHouse запущен: `docker ps`
@@ -179,13 +144,12 @@ SELECT avg(latency) FROM web_events;
 2. Перейдите в Alerting → Alert rules для проверки статуса
 3. При необходимости перезапустите Grafana: `docker-compose restart grafana`
 
-## 📚 Ресурсы
+## Ресурсы
 
 - [ClickHouse Documentation](https://clickhouse.com/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
 - [Grafana ClickHouse Plugin](https://grafana.com/grafana/plugins/grafana-clickhouse-datasource/)
 
-## 📄 Лицензия
+## Лицензия
 
 MIT
-

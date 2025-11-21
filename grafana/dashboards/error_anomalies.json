@@ -24,7 +24,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Количество ошибок в минуту с процентом от общего количества событий. Красная линия на 5% - критический порог.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -166,7 +166,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Текущая частота ошибок за последние 5, 15 и 60 минут. Помогает быстро оценить ситуацию.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -241,7 +241,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Сравнение количества ошибок по часам с предыдущим часом. Помогает выявить резкие изменения.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -375,7 +375,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Тепловая карта показывает интенсивность ошибок по часам и дням недели. Помогает выявить паттерны.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "custom": {

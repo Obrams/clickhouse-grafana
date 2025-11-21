@@ -1,4 +1,3 @@
-# Автоматическая настройка datasource для ClickHouse
 apiVersion: 1
 
 datasources:
@@ -9,17 +8,11 @@ datasources:
     isDefault: true
     editable: true
     jsonData:
-      # HTTP интерфейс ClickHouse
       host: clickhouse
       port: 8123
       protocol: http
-      # База данных по умолчанию
       defaultDatabase: default
-      # Настройки для подключения
       username: default
-      # Дополнительные параметры
       secure: false
     secureJsonData:
-      # Пароль для ClickHouse (из docker-compose.yaml)
       password: changeme
-

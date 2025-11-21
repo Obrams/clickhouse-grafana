@@ -24,7 +24,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Общее количество событий, сгруппированных по дням. Используется функция toDate() для группировки.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -119,7 +119,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Количество событий по часам для более детального анализа. Использует toStartOfHour() для группировки.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -214,7 +214,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Распределение событий по типам во времени. Позволяет увидеть, какие типы событий преобладают в разное время.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {

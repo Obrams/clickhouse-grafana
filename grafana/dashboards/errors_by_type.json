@@ -24,7 +24,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Общее распределение ошибок по типам за выбранный период. Круговая диаграмма для быстрого визуального анализа.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,7 +88,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Статистика по ошибкам: общее количество, процент от всех событий, и средняя частота.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -195,7 +195,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Динамика ошибок по типам во времени. Позволяет отследить всплески определенных типов ошибок.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -290,7 +290,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse_ds"
       },
-      "description": "Топ-10 пользователей с наибольшим количеством ошибок. Полезно для выявления проблемных аккаунтов.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
