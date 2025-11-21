@@ -17,10 +17,7 @@ datasources:
       defaultDatabase: default
       # Настройки для подключения
       username: default
-      # Таймауты
-      timeout: 10
       # Дополнительные параметры
-      dialTimeout: 10
       secure: false
     secureJsonData:
       # Пароль для ClickHouse (из docker-compose.yaml)

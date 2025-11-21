@@ -4,6 +4,15 @@ import argparse
 from clickhouse_driver import Client
 
 
+# Константы для генерации данных
+SECONDS_IN_HOUR = 3600
+MIN_USER_ID = 1
+MAX_USER_ID = 10000
+MIN_LATENCY_MS = 10
+MAX_LATENCY_MS = 1000
+PROGRESS_REPORT_MULTIPLIER = 10
+
+
 def create_table(client, table_name, recreate=False):
     """Создание или пересоздание таблицы"""
     if recreate:
@@ -30,7 +39,7 @@ def generate_data(client, table_name, num_records, batch_size, time_range_hours)
     error_types = ['', 'timeout', 'server_error', 'validation_error', '']
     
     rows = []
-    time_range_seconds = time_range_hours * 3600
+    time_range_seconds = time_range_hours * SECONDS_IN_HOUR
     
     print(f"Генерируем {num_records:,} записей...")
     
@@ -39,8 +48,8 @@ def generate_data(client, table_name, num_records, batch_size, time_range_hours)
             seconds=random.randint(0, time_range_seconds)
         )
         event = random.choice(events)
-        user_id = random.randint(1, 10000)
-        latency = random.randint(10, 1000)
+        user_id = random.randint(MIN_USER_ID, MAX_USER_ID)
+        latency = random.randint(MIN_LATENCY_MS, MAX_LATENCY_MS)
         error_type = random.choice(error_types)
         
         rows.append((event_time, event, user_id, latency, error_type))
@@ -48,7 +57,7 @@ def generate_data(client, table_name, num_records, batch_size, time_range_hours)
         if len(rows) >= batch_size:
             client.execute(f'INSERT INTO {table_name} VALUES', rows)
             rows = []
-            if (i + 1) % (batch_size * 10) == 0:
+            if (i + 1) % (batch_size * PROGRESS_REPORT_MULTIPLIER) == 0:
                 print(f"  Вставлено {i + 1:,} записей...")
     
     if rows:
