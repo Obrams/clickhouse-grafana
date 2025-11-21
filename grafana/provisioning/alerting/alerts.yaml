@@ -1,0 +1,198 @@
+# Автоматическая настройка алертов для Grafana
+apiVersion: 1
+
+# Группы алертов
+groups:
+  - orgId: 1
+    name: ClickHouse Alerts
+    folder: ClickHouse Analytics
+    interval: 1m
+    rules:
+      # Алерт на высокую латентность
+      - uid: high_latency_alert
+        title: High Latency Alert
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: clickhouse_ds
+            model:
+              format: 1
+              queryType: sql
+              rawSql: |
+                -- Средняя латентность за последние 5 минут
+                SELECT 
+                    now() AS time,
+                    avg(latency) AS avg_latency
+                FROM web_events
+                WHERE event_time >= now() - INTERVAL 5 MINUTE
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2000
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2000
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: 'Средняя латентность превысила 2000 мс за последние 5 минут. Текущее значение: {{ $values.B.Value }}'
+          summary: Высокая латентность в системе
+        labels:
+          severity: warning
+          team: backend
+        isPaused: false
+
+      # Алерт на высокий процент ошибок
+      - uid: high_error_rate_alert
+        title: High Error Rate Alert
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: clickhouse_ds
+            model:
+              format: 1
+              queryType: sql
+              rawSql: |
+                -- Процент ошибок за последние 5 минут
+                SELECT 
+                    now() AS time,
+                    (countIf(error_type != '') / count()) * 100 AS error_rate_percent
+                FROM web_events
+                WHERE event_time >= now() - INTERVAL 5 MINUTE
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: 'Процент ошибок превысил 5% за последние 5 минут. Текущее значение: {{ $values.B.Value }}%'
+          summary: Высокий процент ошибок в системе
+        labels:
+          severity: critical
+          team: backend
+        isPaused: false
+
+# Каналы уведомлений (используем встроенный Grafana UI)
+contactPoints:
+  - orgId: 1
+    name: grafana-default-email
+    receivers:
+      - uid: default_receiver
+        type: email
+        settings:
+          addresses: admin@localhost
+        disableResolveMessage: false
+
+# Политики уведомлений
+policies:
+  - orgId: 1
+    receiver: grafana-default-email
+    group_by:
+      - grafana_folder
+      - alertname
+    group_wait: 10s
+    group_interval: 5m
+    repeat_interval: 12h
+

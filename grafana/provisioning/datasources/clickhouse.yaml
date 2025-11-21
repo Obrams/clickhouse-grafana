@@ -1,0 +1,28 @@
+# Автоматическая настройка datasource для ClickHouse
+apiVersion: 1
+
+datasources:
+  - name: ClickHouse
+    type: grafana-clickhouse-datasource
+    access: proxy
+    uid: clickhouse_ds
+    isDefault: true
+    editable: true
+    jsonData:
+      # HTTP интерфейс ClickHouse
+      host: clickhouse
+      port: 8123
+      protocol: http
+      # База данных по умолчанию
+      defaultDatabase: default
+      # Настройки для подключения
+      username: default
+      # Таймауты
+      timeout: 10
+      # Дополнительные параметры
+      dialTimeout: 10
+      secure: false
+    secureJsonData:
+      # Пароль для ClickHouse (из docker-compose.yaml)
+      password: changeme
+

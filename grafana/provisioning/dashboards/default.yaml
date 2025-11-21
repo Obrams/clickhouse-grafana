@@ -1,0 +1,15 @@
+# Автоматическая настройка дашбордов
+apiVersion: 1
+
+providers:
+  - name: 'ClickHouse Dashboards'
+    orgId: 1
+    folder: 'ClickHouse Analytics'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
+      # Автоматическое обновление дашбордов при изменении файлов
+      foldersFromFilesStructure: false
+
