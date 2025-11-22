@@ -149,7 +149,3 @@ SELECT avg(latency) FROM web_events;
 - [ClickHouse Documentation](https://clickhouse.com/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
 - [Grafana ClickHouse Plugin](https://grafana.com/grafana/plugins/grafana-clickhouse-datasource/)
-
-## Лицензия
-
-MIT
