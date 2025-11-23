@@ -1,0 +1,160 @@
+# Grafana Operator Deployment
+# Источник: https://github.com/grafana-operator/grafana-operator
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-operator
+  namespace: grafana-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: grafana-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - persistentvolumeclaims
+      - secrets
+      - serviceaccounts
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - grafana.integreatly.org
+    resources:
+      - grafanadashboards
+      - grafanadatasources
+      - grafanas
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - grafana.integreatly.org
+    resources:
+      - grafanadashboards/status
+      - grafanadatasources/status
+      - grafanas/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: grafana-operator
+subjects:
+  - kind: ServiceAccount
+    name: grafana-operator
+    namespace: grafana-system
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-operator
+  namespace: grafana-system
+  labels:
+    app: grafana-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-operator
+  template:
+    metadata:
+      labels:
+        app: grafana-operator
+    spec:
+      serviceAccountName: grafana-operator
+      containers:
+        - name: grafana-operator
+          image: ghcr.io/grafana-operator/grafana-operator:v5.7.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+          args:
+            - --health-probe-bind-address=:8081
+            - --metrics-bind-address=127.0.0.1:8080
+          ports:
+            - containerPort: 8081
+              name: health
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+
+

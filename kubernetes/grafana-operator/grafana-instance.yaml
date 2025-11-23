@@ -1,0 +1,40 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana-k8s
+  namespace: grafana-system
+  labels:
+    dashboards: "grafana-k8s"
+spec:
+  config:
+    log:
+      mode: "console"
+    auth:
+      disable_login_form: "false"
+    security:
+      admin_user: admin
+      admin_password: admin123
+    plugins:
+      - grafana-clickhouse-datasource
+  deployment:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: grafana
+              image: grafana/grafana:latest
+              env:
+                - name: GF_INSTALL_PLUGINS
+                  value: "grafana-clickhouse-datasource"
+                - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
+                  value: "grafana-clickhouse-datasource"
+  service:
+    spec:
+      type: NodePort
+      ports:
+        - name: grafana
+          port: 3000
+          protocol: TCP
+          targetPort: 3000
+          nodePort: 30300
+

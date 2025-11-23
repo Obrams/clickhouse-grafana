@@ -1,0 +1,29 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: clickhouse-datasource
+  namespace: grafana-system
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana-k8s"
+  datasource:
+    name: ClickHouse
+    type: grafana-clickhouse-datasource
+    access: proxy
+    uid: clickhouse_ds_k8s
+    isDefault: true
+    editable: true
+    jsonData:
+      # URL ClickHouse из Docker (host.docker.internal для Kind)
+      server: host.docker.internal
+      port: 9000
+      protocol: native
+      secure: false
+      username: default
+      defaultDatabase: default
+    secureJsonData:
+      password: changeme
+
+
+

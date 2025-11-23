@@ -1,5 +1,14 @@
-version: '3'
+version: '3.8'
+
+# Профили для различных режимов работы:
+# - default: базовая конфигурация (ClickHouse + Grafana)
+# - terraform: добавляет Terraform контейнер
+# - all: все сервисы вместе
+
 services:
+  # ============================================
+  # ClickHouse Database
+  # ============================================
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     container_name: clickhouse
@@ -14,14 +23,25 @@ services:
         hard: 262144
     environment:
       - CLICKHOUSE_PASSWORD=changeme
+    networks:
+      - grafana-network
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--password", "changeme", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ============================================
+  # Grafana - основной сервис (default profile)
+  # ============================================
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3000:3000"
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
@@ -29,6 +49,57 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=grafana-clickhouse-datasource
+    networks:
+      - grafana-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Terraform - для IaC подхода (profile: terraform)
+  # ============================================
+  terraform:
+    image: hashicorp/terraform:latest
+    container_name: terraform-grafana
+    profiles:
+      - terraform
+      - all
+    working_dir: /workspace
+    volumes:
+      - ./terraform:/workspace
+    networks:
+      - grafana-network
+    depends_on:
+      grafana:
+        condition: service_healthy
+    environment:
+      - TF_VAR_grafana_url=http://grafana:3000
+      - TF_VAR_grafana_auth=admin:admin123
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        echo "=== Terraform Container ==="
+        echo "Grafana URL: http://grafana:3000"
+        echo ""
+        echo "Available commands:"
+        echo "  terraform init"
+        echo "  terraform plan"
+        echo "  terraform apply -auto-approve"
+        echo ""
+        echo "To run commands:"
+        echo "  docker exec -it terraform-grafana terraform init"
+        echo "  docker exec -it terraform-grafana terraform apply"
+        echo ""
+        tail -f /dev/null
+
+networks:
+  grafana-network:
+    driver: bridge
+    name: grafana-network
 
 volumes:
   clickhouse-data:
+    name: clickhouse-data

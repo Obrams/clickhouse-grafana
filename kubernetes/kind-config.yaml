@@ -1,0 +1,17 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: grafana-demo
+nodes:
+  - role: control-plane
+    # Проброс портов для доступа к Grafana
+    extraPortMappings:
+      - containerPort: 30300
+        hostPort: 3001
+        protocol: TCP
+      - containerPort: 30123
+        hostPort: 8124
+        protocol: TCP
+    # Дополнительные монтирования (если нужно)
+    extraMounts:
+      - hostPath: /var/run/docker.sock
+        containerPath: /var/run/docker.sock

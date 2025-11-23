@@ -1,0 +1,368 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: api-requests-dashboard
+  namespace: grafana-system
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana-k8s"
+  json: |
+    {
+      "title": "API Requests Monitoring (Kubernetes)",
+      "uid": "k8s-api-requests",
+      "tags": ["kubernetes", "api", "monitoring"],
+      "editable": true,
+      "timezone": "browser",
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+          "type": "stat",
+          "title": "Total Requests",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT count() as value FROM api_requests WHERE $__timeFilter(request_time)",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "value": 0, "color": "green" },
+                  { "value": 50000, "color": "yellow" },
+                  { "value": 100000, "color": "red" }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+            "orientation": "auto",
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "area"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+          "type": "stat",
+          "title": "Average Response Time",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT round(avg(response_time_ms), 2) as value FROM api_requests WHERE $__timeFilter(request_time)",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "value": 0, "color": "green" },
+                  { "value": 200, "color": "yellow" },
+                  { "value": 500, "color": "red" }
+                ]
+              },
+              "unit": "ms"
+            }
+          },
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+            "orientation": "auto",
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "area"
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
+          "type": "stat",
+          "title": "Error Rate",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT round(countIf(status_code >= 400) * 100.0 / count(), 2) as value FROM api_requests WHERE $__timeFilter(request_time)",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "value": 0, "color": "green" },
+                  { "value": 5, "color": "yellow" },
+                  { "value": 10, "color": "red" }
+                ]
+              },
+              "unit": "percent"
+            }
+          },
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+            "orientation": "auto",
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "area"
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+          "type": "timeseries",
+          "title": "Requests per Second",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, count() / 60 as value FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 20,
+                "drawStyle": "line"
+              },
+              "unit": "reqps"
+            }
+          },
+          "options": {
+            "tooltip": { "mode": "multi" },
+            "legend": { "displayMode": "list", "placement": "bottom" }
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+          "type": "barchart",
+          "title": "Status Codes Distribution",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT toString(status_code) as status_code, count() as count FROM api_requests WHERE $__timeFilter(request_time) GROUP BY status_code ORDER BY count DESC",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "unit": "short"
+            }
+          },
+          "options": {
+            "orientation": "horizontal",
+            "xTickLabelRotation": 0,
+            "showValue": "always"
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+          "type": "timeseries",
+          "title": "Response Time Percentiles",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, quantile(0.5)(response_time_ms) as p50 FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time ORDER BY time",
+              "format": "time_series",
+              "refId": "A"
+            },
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, quantile(0.9)(response_time_ms) as p90 FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time ORDER BY time",
+              "format": "time_series",
+              "refId": "B"
+            },
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, quantile(0.95)(response_time_ms) as p95 FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time ORDER BY time",
+              "format": "time_series",
+              "refId": "C"
+            },
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, quantile(0.99)(response_time_ms) as p99 FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time ORDER BY time",
+              "format": "time_series",
+              "refId": "D"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0,
+                "drawStyle": "line"
+              },
+              "unit": "ms"
+            }
+          },
+          "options": {
+            "tooltip": { "mode": "multi" },
+            "legend": { 
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": ["last", "mean", "max"]
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+          "type": "table",
+          "title": "Slowest Endpoints (Top 10)",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT endpoint as \"Endpoint\", method as \"Method\", count() as \"Requests\", round(avg(response_time_ms), 2) as \"Avg Response (ms)\", round(quantile(0.95)(response_time_ms), 2) as \"P95 (ms)\" FROM api_requests WHERE $__timeFilter(request_time) GROUP BY endpoint, method ORDER BY avg(response_time_ms) DESC LIMIT 10",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "sortBy": [{ "displayName": "Avg Response (ms)", "desc": true }]
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "align": "auto" }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Avg Response (ms)" },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 150
+                  },
+                  {
+                    "id": "color",
+                    "value": { "mode": "thresholds" }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        { "value": 0, "color": "green" },
+                        { "value": 200, "color": "yellow" },
+                        { "value": 500, "color": "red" }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+          "type": "stat",
+          "title": "Error Rate по Endpoint",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT endpoint as metric, round(countIf(status_code >= 400) * 100.0 / count(), 2) as value FROM api_requests WHERE $__timeFilter(request_time) GROUP BY endpoint ORDER BY value DESC LIMIT 5",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+            "orientation": "auto",
+            "textMode": "value_and_name",
+            "colorMode": "value",
+            "graphMode": "none"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "value": 0, "color": "green" },
+                  { "value": 5, "color": "yellow" },
+                  { "value": 10, "color": "red" }
+                ]
+              },
+              "unit": "percent"
+            }
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "x": 0, "y": 28, "w": 24, "h": 8 },
+          "type": "timeseries",
+          "title": "Requests by Method",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse_ds_k8s"
+          },
+          "targets": [
+            {
+              "rawSql": "SELECT toStartOfMinute(request_time) as time, method, count() as value FROM api_requests WHERE $__timeFilter(request_time) GROUP BY time, method ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "drawStyle": "line",
+                "stacking": { "mode": "normal" }
+              },
+              "unit": "short"
+            }
+          },
+          "options": {
+            "tooltip": { "mode": "multi" },
+            "legend": { 
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          }
+        }
+      ]
+    }
+

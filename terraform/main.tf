@@ -1,0 +1,20 @@
+terraform {
+  required_version = ">= 1.5"
+  
+  required_providers {
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "grafana" {
+  url  = var.grafana_url
+  auth = var.grafana_auth
+}
+
+# Создаем папку для дашбордов
+resource "grafana_folder" "terraform_dashboards" {
+  title = var.dashboard_folder
+}

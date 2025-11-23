@@ -144,8 +144,229 @@ SELECT avg(latency) FROM web_events;
 2. Перейдите в Alerting → Alert rules для проверки статуса
 3. При необходимости перезапустите Grafana: `docker-compose restart grafana`
 
+## Дополнительные способы настройки дашбордов
+
+Помимо JSON + provisioning, проект демонстрирует 3 дополнительных метода:
+
+### Способ 4: Terraform (Infrastructure as Code)
+
+**Дашборд**: Server Monitoring  
+**Данные**: server_metrics (метрики 10 серверов)
+
+```bash
+# Генерация данных
+python generate_server_metrics.py --password changeme --records 50000
+
+# Применение через Terraform
+cd terraform
+terraform init
+terraform apply
+```
+
+**Преимущества**:
+- Полная автоматизация через IaC
+- Версионирование инфраструктуры
+- CI/CD интеграция
+- Multi-environment поддержка
+
+📖 Подробная документация: [TERRAFORM.md](TERRAFORM.md)
+
+### Способ 6: Grafonnet (Программируемые дашборды)
+
+**Дашборд**: User Sessions Analytics  
+**Данные**: user_sessions (сессии пользователей)
+
+```bash
+# Генерация данных
+python generate_user_sessions.py --password changeme --records 10000
+
+# Компиляция Jsonnet в JSON
+cd grafonnet
+python build.py
+
+# Перезапуск Grafana
+cd ..
+docker-compose restart grafana
+```
+
+**Преимущества**:
+- DRY (Don't Repeat Yourself)
+- Переиспользование компонентов
+- Генерация дашбордов в цикле
+- Типобезопасность
+
+📖 Подробная документация: [GRAFONNET.md](GRAFONNET.md)
+
+### Способ 8: Kubernetes Operator (GitOps)
+
+**Дашборд**: API Requests Monitoring  
+**Данные**: api_requests (API запросы)
+
+```bash
+# Генерация данных
+python generate_api_requests.py --password changeme --records 100000
+
+# Создание Kind кластера
+cd kubernetes/scripts
+./start-cluster.sh
+
+# Деплой Grafana Operator
+./deploy-all.sh
+```
+
+**Доступ**: http://localhost:3001 (порт 3001!)
+
+**Преимущества**:
+- Декларативное управление
+- GitOps подход
+- Kubernetes-native
+- Auto-healing
+
+📖 Подробная документация: [kubernetes/README.md](kubernetes/README.md)
+
+## Сравнение методов
+
+| Метод | Сложность | Автоматизация | Версионирование | CI/CD | Использование |
+|-------|-----------|---------------|-----------------|-------|---------------|
+| **JSON + Provisioning** | ⭐ | ⭐⭐ | ✅ | ⚠️ | Начинающие |
+| **Terraform** | ⭐⭐ | ⭐⭐⭐ | ✅ | ✅ | IaC команды |
+| **Grafonnet** | ⭐⭐⭐ | ⭐⭐⭐ | ✅ | ✅ | Разработчики |
+| **Kubernetes Operator** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ✅ | ✅ | K8s окружения |
+
+## Единый демо-скрипт
+
+Запустить все методы сразу:
+
+```bash
+./demo.sh
+```
+
+## Генераторы данных
+
+Проект включает 4 генератора тестовых данных:
+
+| Скрипт | Таблица | Описание | Записей по умолчанию |
+|--------|---------|----------|----------------------|
+| `python_generate_script.py` | web_events | События веб-приложения | 1,000 |
+| `generate_server_metrics.py` | server_metrics | Метрики серверов (CPU, RAM) | 50,000 |
+| `generate_user_sessions.py` | user_sessions | Сессии пользователей | 10,000 |
+| `generate_api_requests.py` | api_requests | API запросы с метриками | 100,000 |
+
+## Docker Compose профили
+
+```bash
+# Базовая конфигурация (ClickHouse + Grafana)
+docker-compose up -d
+
+# С Terraform контейнером
+docker-compose --profile terraform up -d
+
+# Все сервисы
+docker-compose --profile all up -d
+```
+
+## Структура проекта (обновлено)
+
+```
+clickhouse-grafana/
+├── docker-compose.yaml           # Docker Compose с профилями
+├── python_generate_script.py    # Генератор web_events
+├── generate_server_metrics.py   # Генератор server_metrics
+├── generate_user_sessions.py    # Генератор user_sessions
+├── generate_api_requests.py     # Генератор api_requests
+├── requirements.txt              # Python зависимости
+├── demo.sh                       # Единый демо-скрипт
+├── README.md                     # Эта документация
+├── QUICKSTART.md                 # Быстрый старт
+├── TERRAFORM.md                  # Документация Terraform
+├── GRAFONNET.md                  # Документация Grafonnet
+├── grafana/
+│   ├── provisioning/
+│   │   ├── datasources/
+│   │   │   └── clickhouse.yaml
+│   │   ├── dashboards/
+│   │   │   └── default.yaml
+│   │   └── alerting/
+│   │       └── alerts.yaml
+│   └── dashboards/              # JSON дашборды
+│       ├── events_frequency.json
+│       ├── errors_by_type.json
+│       ├── latency_monitoring.json
+│       ├── error_anomalies.json
+│       └── user_sessions_grafonnet.json  # Из Grafonnet
+├── terraform/                   # Terraform конфигурация
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── dashboards.tf
+│   ├── terraform.tfvars
+│   └── README.md
+├── grafonnet/                   # Grafonnet дашборды
+│   ├── lib/
+│   │   └── grafonnet/
+│   │       └── grafana.libsonnet
+│   ├── dashboards/
+│   │   └── user_sessions.jsonnet
+│   ├── build.sh
+│   ├── build.py
+│   └── README.md
+└── kubernetes/                  # Kubernetes манифесты
+    ├── kind-config.yaml
+    ├── grafana-operator/
+    │   ├── namespace.yaml
+    │   └── grafana-instance.yaml
+    ├── datasources/
+    │   └── clickhouse-datasource.yaml
+    ├── dashboards/
+    │   └── api-requests-dashboard.yaml
+    ├── scripts/
+    │   ├── start-cluster.sh
+    │   ├── stop-cluster.sh
+    │   ├── deploy-all.sh
+    │   ├── status.sh
+    │   └── port-forward.sh
+    └── README.md
+```
+
+## Когда использовать какой метод?
+
+### JSON + Provisioning
+✅ Простые дашборды  
+✅ Прототипирование  
+✅ Небольшие команды  
+✅ Начинающие пользователи  
+
+### Terraform
+✅ IaC практики в команде  
+✅ Multi-environment (dev/staging/prod)  
+✅ Интеграция с другой инфраструктурой  
+✅ Нужен полный контроль версий  
+
+### Grafonnet
+✅ Много похожих дашбордов  
+✅ Динамическая генерация  
+✅ Переиспользуемые компоненты  
+✅ Команда разработчиков  
+
+### Kubernetes Operator
+✅ Работа в Kubernetes  
+✅ GitOps workflow  
+✅ Namespace isolation  
+✅ Большая инфраструктура  
+
 ## Ресурсы
 
+### Документация проекта
+- [Быстрый старт](QUICKSTART.md)
+- [Terraform подход](TERRAFORM.md)
+- [Grafonnet подход](GRAFONNET.md)
+- [Kubernetes Operator](kubernetes/README.md)
+
+### Внешние ресурсы
 - [ClickHouse Documentation](https://clickhouse.com/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
 - [Grafana ClickHouse Plugin](https://grafana.com/grafana/plugins/grafana-clickhouse-datasource/)
+- [Terraform Grafana Provider](https://registry.terraform.io/providers/grafana/grafana/latest/docs)
+- [Grafonnet Library](https://github.com/grafana/grafonnet-lib)
+- [Grafana Operator](https://grafana.github.io/grafana-operator/)
+- [Kind Documentation](https://kind.sigs.k8s.io/)
