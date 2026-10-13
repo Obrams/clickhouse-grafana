@@ -1,66 +1,66 @@
-# Быстрый старт
+# Quick start
 
-## Шаг 1: Запуск инфраструктуры
+## Step 1: Start the infrastructure
 
 ```bash
 docker-compose up -d
 ```
 
-Подождите 30-60 секунд для полной инициализации Grafana и установки плагина ClickHouse.
+Wait 30-60 seconds for Grafana to fully initialize and install the ClickHouse plugin.
 
-## Шаг 2: Генерация данных
+## Step 2: Generate data
 
 ```bash
 source venv/bin/activate
 python python_generate_script.py --password changeme --records 10000 --time-range 24
 ```
 
-## Шаг 3: Откройте Grafana
+## Step 3: Open Grafana
 
-Перейдите в браузере: **http://localhost:3000**
+Open in the browser: **http://localhost:3000**
 
-- Логин: **admin**
-- Пароль: **admin123**
+- Login: **admin**
+- Password: **admin123**
 
-## Шаг 4: Просмотр дашбордов
+## Step 4: View dashboards
 
-1. В левом меню нажмите на иконку "Dashboards" (4 квадрата)
-2. Выберите папку **"ClickHouse Analytics"**
-3. Откройте любой из 4 дашбордов:
-   - Частота событий
-   - Ошибки по типам
-   - Latency мониторинг
-   - Аномалии ошибок
+1. In the left menu, click the "Dashboards" icon (4 squares)
+2. Select the folder **"ClickHouse Analytics"**
+3. Open any of the 4 dashboards:
+   - Event rate
+   - Errors by type
+   - Latency monitoring
+   - Error anomalies
 
-## Шаг 5: Проверка алертов
+## Step 5: Check alerts
 
-1. В левом меню выберите **"Alerting"** → **"Alert rules"**
-2. Вы увидите 2 настроенных алерта:
+1. In the left menu, select **"Alerting"** → **"Alert rules"**
+2. You will see 2 configured alerts:
    - High Latency Alert
    - High Error Rate Alert
 
-## Генерация большего объема данных
+## Generating more data
 
-Для более реалистичного тестирования:
+For more realistic testing:
 
 ```bash
 python python_generate_script.py --password changeme --records 1000000 --time-range 168
 ```
 
-## Остановка системы
+## Stopping the system
 
 ```bash
 docker-compose down
 docker-compose down -v
 ```
 
-## Устранение проблем
+## Troubleshooting
 
-### Дашборды пустые?
-- Убедитесь, что данные загружены (см. Шаг 2)
-- Выберите правильный временной диапазон в Grafana (правый верхний угол)
+### Dashboards are empty?
+- Make sure the data is loaded (see Step 2)
+- Select the correct time range in Grafana (top right corner)
 
-### Ошибка подключения к ClickHouse?
+### ClickHouse connection error?
 ```bash
 docker ps
 docker-compose logs clickhouse
