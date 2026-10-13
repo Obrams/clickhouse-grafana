@@ -1,17 +1,17 @@
-# ClickHouse + Grafana: Система аналитики и мониторинга
+# ClickHouse + Grafana: analytics and monitoring system
 
-Полнофункциональная система для генерации тестовых данных, хранения в ClickHouse и визуализации в Grafana с настроенными дашбордами и алертами.
+A full-featured system for generating test data, storing it in ClickHouse and visualizing it in Grafana with preconfigured dashboards and alerts.
 
-## Быстрый старт
+## Quick start
 
-### 1. Запуск инфраструктуры
+### 1. Start the infrastructure
 
 ```bash
 docker-compose up -d
 docker ps
 ```
 
-### 2. Создание виртуального окружения и установка зависимостей
+### 2. Create a virtual environment and install dependencies
 
 ```bash
 python3 -m venv venv
@@ -19,35 +19,35 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Генерация тестовых данных
+### 3. Generate test data
 
 ```bash
 python python_generate_script.py --password changeme
 python python_generate_script.py --password changeme --records 10000
 ```
 
-### 4. Доступ к Grafana
+### 4. Open Grafana
 
-Откройте в браузере: **http://localhost:3000**
+Open in the browser: **http://localhost:3000**
 
-- **Логин**: admin
-- **Пароль**: admin123
+- **Login**: admin
+- **Password**: admin123
 
-## Что включено
+## What's included
 
-### Дашборды
+### Dashboards
 
-1. **Частота событий** - анализ активности по дням/часам/типам
-2. **Ошибки по типам** - мониторинг ошибок и проблемных пользователей
-3. **Latency мониторинг** - производительность системы (avg, p95, p99)
-4. **Аномалии ошибок** - детектирование всплесков и паттернов ошибок
+1. **Event rate** - activity analysis by day/hour/type
+2. **Errors by type** - monitoring errors and problematic users
+3. **Latency monitoring** - system performance (avg, p95, p99)
+4. **Error anomalies** - detecting error spikes and patterns
 
-### Алерты
+### Alerts
 
-- **High Latency Alert** - срабатывает при latency > 2000 мс
-- **High Error Rate Alert** - срабатывает при error_rate > 5%
+- **High Latency Alert** - fires when latency > 2000 ms
+- **High Error Rate Alert** - fires when error_rate > 5%
 
-## Структура проекта
+## Project structure
 
 ```
 clickhouse-grafana/
@@ -70,9 +70,9 @@ clickhouse-grafana/
         └── error_anomalies.json
 ```
 
-## Полезные команды
+## Useful commands
 
-### Генерация данных
+### Data generation
 
 ```bash
 python python_generate_script.py --password changeme --recreate --records 100000
@@ -100,51 +100,51 @@ SELECT event, count() FROM web_events GROUP BY event;
 SELECT avg(latency) FROM web_events;
 ```
 
-## Требования
+## Requirements
 
-- Docker и Docker Compose
+- Docker and Docker Compose
 - Python 3.8+
-- 2GB+ свободной RAM для Docker
+- 2GB+ free RAM for Docker
 
-## Структура данных
+## Data structure
 
-Таблица `web_events` содержит:
-- `event_time` (DateTime) - время события
-- `event` (String) - тип события: login, logout, click, purchase, error, view
-- `user_id` (UInt32) - ID пользователя (1-10000)
-- `latency` (UInt32) - задержка в мс (10-1000)
-- `error_type` (String) - тип ошибки: timeout, server_error, validation_error или пусто
+The `web_events` table contains:
+- `event_time` (DateTime) - event time
+- `event` (String) - event type: login, logout, click, purchase, error, view
+- `user_id` (UInt32) - user ID (1-10000)
+- `latency` (UInt32) - latency in ms (10-1000)
+- `error_type` (String) - error type: timeout, server_error, validation_error or empty
 
-## Примеры использования
+## Usage examples
 
-### Мониторинг производительности
-1. Откройте дашборд "Latency мониторинг"
-2. Проверьте метрики P95 и Max latency
-3. Посмотрите топ пользователей с высокой латентностью
+### Performance monitoring
+1. Open the "Latency monitoring" dashboard
+2. Check P95 and Max latency metrics
+3. Look at the top users with high latency
 
-### Анализ ошибок
-1. Откройте дашборд "Ошибки по типам"
-2. Проверьте процент ошибок (должен быть < 5%)
-3. Изучите динамику ошибок по времени
+### Error analysis
+1. Open the "Errors by type" dashboard
+2. Check the error rate (should be < 5%)
+3. Review error trends over time
 
-### Детектирование аномалий
-1. Откройте дашборд "Аномалии ошибок"
-2. Проверьте тепловую карту для выявления паттернов
-3. Сравните текущие значения с предыдущими периодами
+### Anomaly detection
+1. Open the "Error anomalies" dashboard
+2. Check the heatmap to spot patterns
+3. Compare current values with previous periods
 
-## Устранение проблем
+## Troubleshooting
 
-### Grafana не показывает данные
-1. Проверьте, что ClickHouse запущен: `docker ps`
-2. Убедитесь, что данные загружены (см. команды выше)
-3. Проверьте datasource в Grafana: Settings → Data sources
+### Grafana shows no data
+1. Check that ClickHouse is running: `docker ps`
+2. Make sure the data is loaded (see commands above)
+3. Check the datasource in Grafana: Settings → Data sources
 
-### Алерты не работают
-1. Убедитесь, что плагин ClickHouse установлен (проверьте логи Grafana)
-2. Перейдите в Alerting → Alert rules для проверки статуса
-3. При необходимости перезапустите Grafana: `docker-compose restart grafana`
+### Alerts do not work
+1. Make sure the ClickHouse plugin is installed (check Grafana logs)
+2. Go to Alerting → Alert rules to check status
+3. Restart Grafana if needed: `docker-compose restart grafana`
 
-## Ресурсы
+## Resources
 
 - [ClickHouse Documentation](https://clickhouse.com/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
