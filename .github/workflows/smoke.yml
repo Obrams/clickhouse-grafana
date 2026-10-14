@@ -1,0 +1,56 @@
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Stack up, data in, dashboards provisioned
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start ClickHouse and Grafana
+        run: docker compose up -d
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Wait for ClickHouse
+        run: timeout 120 bash -c 'until curl -sf http://localhost:8123/ping; do sleep 2; done'
+
+      - name: Generate events
+        run: python python_generate_script.py --password changeme --records 10000
+
+      - name: Check rows in ClickHouse
+        run: |
+          rows=$(curl -sf -u default:changeme --data-binary "SELECT count() FROM web_events" http://localhost:8123/)
+          echo "web_events rows: $rows"
+          test "$rows" -ge 10000
+
+      - name: Wait for Grafana
+        run: timeout 180 bash -c 'until curl -sf http://localhost:3000/api/health; do sleep 3; done'
+
+      - name: Check datasource and dashboards are provisioned
+        run: |
+          curl -sf -u admin:admin123 http://localhost:3000/api/datasources | tee datasources.json
+          grep -qi clickhouse datasources.json
+          curl -sf -u admin:admin123 "http://localhost:3000/api/search?type=dash-db" | tee dashboards.json
+          count=$(grep -o '"type":"dash-db"' dashboards.json | wc -l)
+          echo "dashboards: $count"
+          test "$count" -ge 4
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --tail=200
